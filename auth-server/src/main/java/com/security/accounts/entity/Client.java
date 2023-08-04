@@ -1,8 +1,10 @@
 package com.security.accounts.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
@@ -17,6 +19,8 @@ import java.util.UUID;
 @Table(name = "clients")
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Client implements Serializable {
 
     @Id
