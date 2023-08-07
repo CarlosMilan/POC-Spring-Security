@@ -15,19 +15,49 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
 @AllArgsConstructor
-public class UserServiceImpl implements UserService{
+public class UserServiceImpl implements UserService {
 
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
 
     @Override
-    public MessageDTO addUser(UserDTO userDTO) {
-        User user = new User();
+    public UserDTO getUserDetails(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        return UserDTO.builder()
+                .id(user.getId().toString())
+                .username(user.getUsername())
+                .roles(user.getRoles()
+                        .stream()
+                        .map(role -> role.getRoleName().toString())
+                        .collect(Collectors.toSet()))
+                .build();
+    }
+
+    @Override
+    public MessageDTO createUser(UserDTO userDTO) {
+        User user = saveUser(new User(), userDTO);
+        return new MessageDTO("User " + user.getId() + " created");
+    }
+
+    @Override
+    public MessageDTO updateUser(UserDTO userDTO) {
+        User user = userRepository.findById(UUID.fromString(userDTO.getId()))
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        saveUser(user, userDTO);
+        return new MessageDTO("User " + user.getUsername() + " updated");
+    }
+
+    private User saveUser(User user, UserDTO userDTO) {
+
         user.setUsername(userDTO.getUsername());
         user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
         Set<Role> roles = new HashSet<>();
@@ -37,8 +67,14 @@ public class UserServiceImpl implements UserService{
             roles.add(role);
         });
         user.setRoles(roles);
-
-        User userRegistered = userRepository.save(user);
-        return new MessageDTO("User " + userRegistered.getId() + " created");
+        return userRepository.save(user);
     }
+
+    @Override
+    public MessageDTO deleteUser(String id) {
+        userRepository.deleteById(UUID.fromString(id));
+        return new MessageDTO("User " + id + " deleted");
+    }
+
+
 }

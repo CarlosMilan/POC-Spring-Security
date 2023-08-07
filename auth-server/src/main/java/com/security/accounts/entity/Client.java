@@ -26,6 +26,8 @@ public class Client implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
+
+    @Column(name = "client_id", unique = true)
     private String clientId;
     private String clientSecret;
 

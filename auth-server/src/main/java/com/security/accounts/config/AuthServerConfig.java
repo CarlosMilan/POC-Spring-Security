@@ -8,10 +8,10 @@ import com.security.accounts.config.keys.KeyManager;
 import com.security.accounts.service.ClientService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -19,17 +19,17 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.server.authorization.JdbcOAuth2AuthorizationConsentService;
-import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
 import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
+import org.springframework.security.oauth2.server.authorization.token.JwtGenerator;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 
-import javax.sql.DataSource;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -41,6 +41,9 @@ public class AuthServerConfig {
     private final PasswordEncoder passwordEncoder;
     private final ClientService clientService;
     private final KeyManager keyManager;
+
+    @Value("${url.login.page}")
+    private String loginUrl;
 
     @Bean
     @Order(1)
@@ -57,7 +60,7 @@ public class AuthServerConfig {
         //Con las siguientes lineas de código se redirige a la página de login cuando nadie esta autenticado cuando
         //solicitamos un access token
         http.exceptionHandling(exception -> exception.authenticationEntryPoint(
-                new LoginUrlAuthenticationEntryPoint("/login")))
+                new LoginUrlAuthenticationEntryPoint(loginUrl)))
                 // Acá habilitamos al resource server para acceder a información del usuario
                 .oauth2ResourceServer(rs -> rs.jwt(Customizer.withDefaults()));
 
@@ -79,8 +82,8 @@ public class AuthServerConfig {
     @Bean
     @Order(2)
     public SecurityFilterChain webSecurityFilterChain(HttpSecurity http) throws Exception{
-        http.authorizeHttpRequests( (auhorize) -> auhorize
-                .requestMatchers("/login", "/error").permitAll()
+        http.authorizeHttpRequests( auhorize -> auhorize
+                .requestMatchers("/login", "/error", "/test").permitAll()
                 .anyRequest().authenticated()
         )
 
@@ -130,6 +133,17 @@ public class AuthServerConfig {
 //        return new JdbcOAuth2AuthorizationConsentService(new JdbcTemplate(dataSource), clientRepository);
 //    }
 
+    @Bean
+    NimbusJwtEncoder jwtEncoder(JWKSource<SecurityContext> jwkSource) {
+        return new NimbusJwtEncoder(jwkSource);
+    }
+
+    @Bean
+    JwtGenerator jwtGenerator(JwtEncoder jwtEncoder, OAuth2TokenCustomizer<JwtEncodingContext>  customizer) {
+        JwtGenerator generator = new JwtGenerator(jwtEncoder);
+        generator.setJwtCustomizer(customizer);
+        return generator;
+    }
 
 
 }
