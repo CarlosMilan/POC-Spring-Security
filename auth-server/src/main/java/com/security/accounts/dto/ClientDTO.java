@@ -1,5 +1,7 @@
 package com.security.accounts.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,11 +15,14 @@ import java.util.Set;
 @NoArgsConstructor
 public class ClientDTO {
 
+    @NotBlank
     private String clientId;
+    @NotBlank
     private String clientSecret;
-    private Set<ClientAuthenticationMethod> authenticationMethods;
-    private Set<AuthorizationGrantType> authorizationGrantTypes;
-    private Set<String> redirectUris;
-    private Set<String> scopes;
+    private Set<@NotBlank ClientAuthenticationMethod> authenticationMethods;
+    private Set<@NotBlank AuthorizationGrantType> authorizationGrantTypes;
+    private Set<@NotBlank String> redirectUris;
+    private Set<@NotBlank String> scopes;
+    @NotNull
     private Boolean requireProofKey;
 }

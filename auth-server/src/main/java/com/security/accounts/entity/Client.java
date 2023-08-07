@@ -50,6 +50,7 @@ public class Client implements Serializable {
                 .clientId(client.getClientId())
                 .clientSecret(client.getClientSecret())
                 .clientIdIssuedAt(new Date().toInstant())
+                .clientIdIssuedAt(new Date().toInstant())
                 .clientAuthenticationMethods(am -> am.addAll(client.getAuthenticationMethods()))
                 .authorizationGrantTypes(agt -> agt.addAll(client.getAuthorizationGrantTypes()))
                 .redirectUris(ru -> ru.addAll(client.getRedirectUris()))

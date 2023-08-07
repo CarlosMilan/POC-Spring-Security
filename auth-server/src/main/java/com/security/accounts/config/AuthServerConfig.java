@@ -35,15 +35,16 @@ import java.util.stream.Collectors;
 
 @Configuration
 @Slf4j
-@AllArgsConstructor
 public class AuthServerConfig {
 
-    private final PasswordEncoder passwordEncoder;
-    private final ClientService clientService;
     private final KeyManager keyManager;
 
     @Value("${url.login.page}")
     private String loginUrl;
+
+    public AuthServerConfig(KeyManager keyManager) {
+        this.keyManager = keyManager;
+    }
 
     @Bean
     @Order(1)
@@ -84,6 +85,7 @@ public class AuthServerConfig {
     public SecurityFilterChain webSecurityFilterChain(HttpSecurity http) throws Exception{
         http.authorizeHttpRequests( auhorize -> auhorize
                 .requestMatchers("/login", "/error", "/test").permitAll()
+                        .requestMatchers("/clients", "/key", "/auth/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
         )
 
