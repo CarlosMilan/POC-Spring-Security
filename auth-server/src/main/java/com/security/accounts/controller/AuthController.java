@@ -2,6 +2,7 @@ package com.security.accounts.controller;
 
 import com.security.accounts.dto.MessageDTO;
 import com.security.accounts.dto.UserDTO;
+import com.security.accounts.dto.UserResponseDTO;
 import com.security.accounts.service.UserService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -17,7 +18,7 @@ public class AuthController {
     private final UserService userService;
 
     @GetMapping("/{username}")
-    public ResponseEntity<UserDTO> getUser(@PathVariable String username) {
+    public ResponseEntity<UserResponseDTO> getUser(@PathVariable String username) {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(userService.getUserDetails(username));

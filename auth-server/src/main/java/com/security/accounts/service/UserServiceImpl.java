@@ -2,6 +2,7 @@ package com.security.accounts.service;
 
 import com.security.accounts.dto.MessageDTO;
 import com.security.accounts.dto.UserDTO;
+import com.security.accounts.dto.UserResponseDTO;
 import com.security.accounts.entity.Role;
 import com.security.accounts.entity.User;
 import com.security.accounts.entity.enums.RoleName;
@@ -28,11 +29,11 @@ public class UserServiceImpl implements UserService {
     private final RoleRepository roleRepository;
 
     @Override
-    public UserDTO getUserDetails(String username) {
+    public UserResponseDTO getUserDetails(String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        return UserDTO.builder()
+        return UserResponseDTO.builder()
                 .id(user.getId().toString())
                 .username(user.getUsername())
                 .roles(user.getRoles()

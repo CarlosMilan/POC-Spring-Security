@@ -5,8 +5,6 @@ import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import com.security.accounts.config.keys.KeyManager;
-import com.security.accounts.service.ClientService;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -17,21 +15,19 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.JwtEncoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
 import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
-import org.springframework.security.oauth2.server.authorization.token.JwtGenerator;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
 
 @Configuration
 @Slf4j
@@ -49,19 +45,25 @@ public class AuthServerConfig {
     @Bean
     @Order(1)
     public SecurityFilterChain authSecurityFilterChain(HttpSecurity http) throws Exception {
+
+//        http.authorizeHttpRequests(authz -> authz
+//                .requestMatchers("/auth/user", "/clients").hasAuthority("SCOPE_admin"));
+
         OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
 
         // Habilitamos el soporte para OpenID connect
-        http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
+        OAuth2AuthorizationServerConfigurer authz = http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
                 // Se agrega página personalizada de consent (confirmar el acceso del cliente al resource server)
                 //.authorizationEndpoint( authz -> authz.consentPage("/oauth2/consent"))
                 // Se configura para hacer uso del flujo OpenID Connect por defecto
                 .oidc(Customizer.withDefaults());
-
+        http.securityMatchers(matchers -> matchers
+                .requestMatchers(antMatcher("/oauth2/**"), authz.getEndpointsMatcher())
+        );
         //Con las siguientes lineas de código se redirige a la página de login cuando nadie esta autenticado cuando
         //solicitamos un access token
         http.exceptionHandling(exception -> exception.authenticationEntryPoint(
-                new LoginUrlAuthenticationEntryPoint(loginUrl)))
+                new LoginUrlAuthenticationEntryPoint("/login")))
                 // Acá habilitamos al resource server para acceder a información del usuario
                 .oauth2ResourceServer(rs -> rs.jwt(Customizer.withDefaults()));
 
@@ -84,8 +86,7 @@ public class AuthServerConfig {
     @Order(2)
     public SecurityFilterChain webSecurityFilterChain(HttpSecurity http) throws Exception{
         http.authorizeHttpRequests( auhorize -> auhorize
-                .requestMatchers("/login", "/error", "/test").permitAll()
-                        .requestMatchers("/clients", "/key", "/auth/**").hasRole("ADMIN")
+                .requestMatchers("/login", "/error", "/auth/user/**", "/clients/**").permitAll()
                 .anyRequest().authenticated()
         )
 
@@ -94,9 +95,6 @@ public class AuthServerConfig {
         http.csrf(AbstractHttpConfigurer::disable);
         return http.build();
     }
-
-
-
 
     @Bean
     public OAuth2TokenCustomizer<JwtEncodingContext> tokenCustomizer() {
@@ -134,18 +132,5 @@ public class AuthServerConfig {
 //    JdbcOAuth2AuthorizationConsentService consentService(DataSource dataSource, RegisteredClientRepository clientRepository) {
 //        return new JdbcOAuth2AuthorizationConsentService(new JdbcTemplate(dataSource), clientRepository);
 //    }
-
-    @Bean
-    NimbusJwtEncoder jwtEncoder(JWKSource<SecurityContext> jwkSource) {
-        return new NimbusJwtEncoder(jwkSource);
-    }
-
-    @Bean
-    JwtGenerator jwtGenerator(JwtEncoder jwtEncoder, OAuth2TokenCustomizer<JwtEncodingContext>  customizer) {
-        JwtGenerator generator = new JwtGenerator(jwtEncoder);
-        generator.setJwtCustomizer(customizer);
-        return generator;
-    }
-
 
 }

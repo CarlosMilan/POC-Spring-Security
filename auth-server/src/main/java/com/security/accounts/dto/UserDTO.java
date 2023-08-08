@@ -1,6 +1,5 @@
 package com.security.accounts.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -20,7 +19,6 @@ public class UserDTO {
     @NotBlank(message = "Username is mandatory")
     @Size(min = 8, max = 32, message = "Invalid Username")
     private String username;
-    @JsonIgnore
     @NotBlank
     @Size(min = 8, max = 32, message = "Invalid Username")
     private String password;

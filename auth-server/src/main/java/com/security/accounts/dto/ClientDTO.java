@@ -19,8 +19,8 @@ public class ClientDTO {
     private String clientId;
     @NotBlank
     private String clientSecret;
-    private Set<@NotBlank ClientAuthenticationMethod> authenticationMethods;
-    private Set<@NotBlank AuthorizationGrantType> authorizationGrantTypes;
+    private Set<@NotNull ClientAuthenticationMethod> authenticationMethods;
+    private Set<@NotNull AuthorizationGrantType> authorizationGrantTypes;
     private Set<@NotBlank String> redirectUris;
     private Set<@NotBlank String> scopes;
     @NotNull
