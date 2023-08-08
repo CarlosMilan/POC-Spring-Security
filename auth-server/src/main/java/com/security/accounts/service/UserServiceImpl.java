@@ -50,8 +50,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public MessageDTO updateUser(UserDTO userDTO) {
-        User user = userRepository.findById(UUID.fromString(userDTO.getId()))
+    public MessageDTO updateUser(String id, UserDTO userDTO) {
+        User user = userRepository.findById(UUID.fromString(id))
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         saveUser(user, userDTO);
         return new MessageDTO("User " + user.getUsername() + " updated");

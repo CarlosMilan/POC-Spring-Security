@@ -30,7 +30,3 @@ jwt:
     id: 'c90ef912-32b2-464c-8746-934e0caf6c95'
     public: classpath:app.pub
     private: classpath:app.key
-
-url:
-  login:
-    page: /login

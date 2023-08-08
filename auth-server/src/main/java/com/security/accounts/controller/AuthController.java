@@ -31,11 +31,11 @@ public class AuthController {
                 .body(userService.createUser(userDTO));
     }
 
-    @PutMapping
-    public ResponseEntity<MessageDTO> updateUser(@RequestBody @Valid UserDTO userDTO) {
+    @PutMapping("/{id}")
+    public ResponseEntity<MessageDTO> updateUser(@PathVariable String id, @RequestBody @Valid UserDTO userDTO) {
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(userService.updateUser(userDTO));
+                .body(userService.updateUser(id, userDTO));
     }
 
     @DeleteMapping("/{id}")

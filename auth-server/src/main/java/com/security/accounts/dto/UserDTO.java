@@ -15,7 +15,6 @@ import java.util.Set;
 @Builder
 public class UserDTO {
 
-    private String id;
     @NotBlank(message = "Username is mandatory")
     @Size(min = 8, max = 32, message = "Invalid Username")
     private String username;

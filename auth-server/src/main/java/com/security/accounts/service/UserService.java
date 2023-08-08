@@ -8,6 +8,6 @@ public interface UserService {
 
     UserResponseDTO getUserDetails(String username);
     MessageDTO createUser(UserDTO userDTO);
-    MessageDTO updateUser(UserDTO userDTO);
+    MessageDTO updateUser(String id, UserDTO userDTO);
     MessageDTO deleteUser(String id);
 }
